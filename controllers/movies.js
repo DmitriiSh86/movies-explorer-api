@@ -1,13 +1,13 @@
 /* eslint-disable consistent-return */
 const Movie = require('../models/movies');
 const NotFoundError = require('../errors/not-found-error');
-const BadRequest = require('../errors/bad-request-error');
 const InternalServer = require('../errors/internal-server-error');
 const Forbidden = require('../errors/forbidden-error');
 const { CREATED_STATUS } = require('../utils/status');
 
 module.exports.getMovies = (req, res, next) => {
-  Movie.find({})
+  const userId = req.user._id;
+  Movie.find({ owner: userId })
     .then((movie) => {
       movie.reverse();
       res.send({ data: movie });
@@ -45,12 +45,7 @@ module.exports.createMovie = (req, res, next) => {
     owner,
   })
     .then((movie) => res.status(CREATED_STATUS).send({ data: movie }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return next(new BadRequest('Переданный некорректные данные'));
-      }
-      return next(new InternalServer('Произошла ошибка'));
-    });
+    .catch(() => next(new InternalServer()));
 };
 
 module.exports.deleteMovie = async (req, res, next) => {
@@ -65,15 +60,6 @@ module.exports.deleteMovie = async (req, res, next) => {
     return next(new Forbidden('Это не ваш фильм'));
   }
   Movie.deleteOne(movieFound)
-    .orFail(new NotFoundError('Фильма с таким id нет'))
     .then((movie) => res.send({ data: movie }))
-    .catch((err) => {
-      if (err.statusCode === 404) {
-        return next(err);
-      }
-      if (err.name === 'CastError') {
-        return next(new BadRequest('Переданный id некорректен'));
-      }
-      return next(new InternalServer('Произошла ошибка'));
-    });
+    .catch(() => next(new InternalServer()));
 };

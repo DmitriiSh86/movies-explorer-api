@@ -4,12 +4,13 @@ const mongoose = require('mongoose');
 const cookies = require('cookie-parser');
 const cors = require('cors');
 const helmet = require('helmet');
+const { errors } = require('celebrate');
+const { DATA_BASE, PORT } = require('./config');
 
-mongoose.connect('mongodb://127.0.0.1:27017/bitfilmsdb', {
+mongoose.connect(DATA_BASE, {
   useNewUrlParser: true,
 });
 
-const { errors } = require('celebrate');
 const errorHandler = require('./middlewares/error-handler');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 
@@ -37,4 +38,4 @@ app.use(errorLogger);
 app.use(errors());
 app.use(errorHandler);
 
-app.listen(4001);
+app.listen(PORT);

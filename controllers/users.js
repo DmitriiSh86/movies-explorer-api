@@ -2,7 +2,6 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/users');
 const NotFoundError = require('../errors/not-found-error');
-const BadRequest = require('../errors/bad-request-error');
 const InternalServer = require('../errors/internal-server-error');
 const Unauthorized = require('../errors/unauthorized-error');
 const Conflict = require('../errors/conflict-error');
@@ -23,9 +22,6 @@ module.exports.createUser = (req, res, next) => {
       },
     }))
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return next(new BadRequest('Переданы некоректные данные'));
-      }
       if (err.code === 11000) {
         return next(new Conflict('Пользователь с текущим email уже занят'));
       }
@@ -57,12 +53,7 @@ module.exports.updateProfile = (req, res, next) => {
     { new: true, runValidators: true },
   )
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.name === 'ValidationError') {
-        return next(new BadRequest('Переданы некоректные данные'));
-      }
-      return next(new InternalServer());
-    });
+    .catch(() => next(new InternalServer()));
 };
 
 module.exports.getMe = (req, res, next) => {
@@ -70,15 +61,7 @@ module.exports.getMe = (req, res, next) => {
   User.findById(userId)
     .orFail(new NotFoundError('Пользоваетеля с таким id нет'))
     .then((user) => res.send({ data: user }))
-    .catch((err) => {
-      if (err.statusCode === 404) {
-        return next(err);
-      }
-      if (err.name === 'CastError') {
-        return next(new BadRequest('Переданный id некорректен'));
-      }
-      return next(new InternalServer());
-    });
+    .catch(() => next(new InternalServer()));
 };
 
 module.exports.logOut = (req, res) => res.clearCookie('jwt').send({ message: 'LogOut' });

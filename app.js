@@ -21,9 +21,9 @@ app.use(helmet());
 const router = require('./routes');
 
 // eslint-disable-next-line spaced-comment
-app.use(cors({ origin: 'https://dmitrii-movies-explorer.nomoredomainsicu.ru', credentials: true }));
+app.use(cors({ origin: ['https://dmitrii-movies-explorer.nomoredomainsicu.ru', 'https://api.nomoreparties.co/beatfilm-movies'], credentials: true }));
 // eslint-disable-next-line spaced-comment
-//app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
+//app.use(cors({ origin: ['http://localhost:3000', 'https://api.nomoreparties.co/beatfilm-movies'], credentials: true }));
 
 app.use(cookies());
 app.use(express.json());
